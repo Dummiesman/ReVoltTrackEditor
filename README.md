@@ -4,7 +4,7 @@ A re-make of the Re-Volt Track Editor in Unity 2020.3.21f1
 ## Running
 This requires a copy of the original Track Editor files to use (wavs, bitmaps, and trackunit.rtu). Open `editor_path.txt` and set this to the path where your editor files exist, from there it will just run.
 
-You can obtain these files [here](https://www.mediafire.com/file/6rimevzh3xljmzn/editor_files.zip/file)
+You can obtain these files [here](https://www.mediafire.com/file/6rimevzh3xljmzn/editor_files.zip/file) (Note that these files come from the original editor and are not covered under the LICENSE)
 
 You can only export levels on desktop platforms if the editor detects it's installed within a Re-Volt installation, like so:
 
