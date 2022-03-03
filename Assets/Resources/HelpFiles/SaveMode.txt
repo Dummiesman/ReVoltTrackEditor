@@ -1,0 +1,5 @@
+name,keyboard,gamepad
+Move Cursor,Arrow Keys,D-Pad / Left Stick
+Backspace,Backspace,X Button
+Space,Space,Y Button
+Go Back,Escape,B Button

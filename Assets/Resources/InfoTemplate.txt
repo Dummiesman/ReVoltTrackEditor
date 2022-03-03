@@ -1,0 +1,19 @@
+;----------------------------
+; Revolt .INF file structure
+;----------------------------
+
+NAME            'User-%TRACKNAME%'
+STARTPOS        %STARTPOS%
+STARTPOSREV     %STARTPOS%
+STARTROT        %STARTROT%
+STARTROTREV     %INVSTARTROT%
+STARTGRID       3
+STARTGRIDREV    3
+FARCLIP         10000
+FOGSTART        8000
+FOGCOLOR        0 0 0
+VERTFOGSTART    0
+VERTFOGEND      0
+WORLDRGBPER     100
+MODELRGBPER     100
+INSTANCERGBPER  100

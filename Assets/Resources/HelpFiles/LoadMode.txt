@@ -1,0 +1,5 @@
+name,keyboard,gamepad
+Move Cursor,Arrow Keys,D-Pad / Left Stick
+Delete Track,Delete,X Button
+Load Track,Return,A Button
+Go Back,Escape,B Button

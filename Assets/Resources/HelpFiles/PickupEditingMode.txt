@@ -1,0 +1,4 @@
+name,keyboard,gamepad
+Move Cursor,Arrow Keys,D-Pad / Left Stick
+Toggle Pickup,Return,A Button
+Go Back,Escape,B Button

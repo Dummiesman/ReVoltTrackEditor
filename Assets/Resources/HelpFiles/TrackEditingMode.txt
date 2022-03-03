@@ -1,0 +1,12 @@
+name,keyboard,gamepad
+Move Cursor,Arrow Keys,D-Pad / Left Stick
+Place Module,Return,A Button
+Copy Module,C,SELECT Button
+Previous Variant,Z,Left Bumper
+Next Variant,X,Right Bumper
+Raise Module,Page Up,Y Button
+Lower Module,Page Down,X Button
+Rotate Module,Space,Trigger Buttons
+Toggle Surface,T,Left Stick Button
+Rotate Camera,Numpad +/-,Right Stick
+Menu,Escape,START Button

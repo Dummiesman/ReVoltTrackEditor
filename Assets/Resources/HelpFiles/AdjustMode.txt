@@ -1,0 +1,5 @@
+name,keyboard,gamepad
+Resize Track,Arrow Keys,D-Pad / Left Stick
+Shift Track,SHIFT+,SHIFT+
+,Arrow Keys,D-Pad / Left Stick
+Go Back,Escape,B Button
