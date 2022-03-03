@@ -269,13 +269,15 @@ public partial class TrackExporter
     */
     public void WriteInfoFile()
     {
+        string formatFloat(float f) => f.ToString("F6", CultureInfo.InvariantCulture);
+
         var startModulePos = MakeModuleMatrix(startModule).GetColumn(3) * exportScale;
 
         string infoTemplate = Resources.Load<TextAsset>("InfoTemplate").text;
         infoTemplate = infoTemplate.Replace("%TRACKNAME%", track.Name);
-        infoTemplate = infoTemplate.Replace("%STARTROT%", (startModule.Rotation * 0.25f).ToString("F6", CultureInfo.InvariantCulture));
-        infoTemplate = infoTemplate.Replace("%INVSTARTROT%", (ReverseDirection(startModule.Rotation) * 0.25f).ToString("F6", CultureInfo.InvariantCulture));
-        infoTemplate = infoTemplate.Replace("%STARTPOS%", $"{startModulePos.x.ToString("F6", CultureInfo.InvariantCulture)} {startModulePos.y.ToString("F6", CultureInfo.InvariantCulture)} {startModulePos.z.ToString("F6", CultureInfo.InvariantCulture)}"); 
+        infoTemplate = infoTemplate.Replace("%STARTROT%", formatFloat(startModule.Rotation * 0.25f));
+        infoTemplate = infoTemplate.Replace("%INVSTARTROT%", formatFloat(ReverseDirection(startModule.Rotation) * 0.25f));
+        infoTemplate = infoTemplate.Replace("%STARTPOS%", $"{formatFloat(startModulePos.x)} {formatFloat(startModulePos.y)} {formatFloat(startModulePos.z)}"); 
 
         string infoFilePath = Path.Combine(exportPath, $"{trackFolderName}.inf");
         File.WriteAllText(infoFilePath, infoTemplate);
