@@ -1,5 +1,6 @@
 # ReVoltTrackEditor
-A re-make of the Re-Volt Track Editor in Unity 2020.3.21f1
+A re-make of the Re-Volt Track Editor in Unity 2020.3.21f1  
+![Preview Image](preview.png?raw=true "Preview")
 
 ## Running
 This requires a copy of the original Track Editor files to use (wavs, bitmaps, and trackunit.rtu). Open `editor_path.txt` and set this to the path where your editor files exist, from there it will just run.
