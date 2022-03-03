@@ -8,11 +8,11 @@ You can obtain these files [here](https://www.mediafire.com/file/6rimevzh3xljmzn
 
 You can only export levels on desktop platforms if the editor detects it's installed within a Re-Volt installation, like so:
 
-Games\Re-Volt
-\-- editor
-\--- trackunit.rtu
-\--- etc
-\-- levels
+Games\Re-Volt  
+\-- editor  
+\--- trackunit.rtu  
+\--- etc  
+\-- levels 
 
 Exporting levels to Android works by automatically detecting an RVGL installation.
 
