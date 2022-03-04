@@ -23,6 +23,29 @@ using UnityEngine;
 
 namespace ReVolt.Track
 {
+    public enum AINodePriority
+    {
+        RacingLine,
+        Pickup,
+        Stairs,
+        Bumpy,
+        Slowdown25,
+        SoftSuspension,
+        JumpWall,
+        IntroSlowdown,
+        TurboLine,
+        LongPickup,
+        Shortcut,
+        Longcut,
+        BarrelBlock,
+        OffThrottle,
+        OffThrottlePetrol,
+        Wilderness,
+        Slowdown15,
+        Slowdown20,
+        Slowdown30
+    }
+
     public struct AINodeEnd
     {
         public int Speed;
@@ -31,7 +54,7 @@ namespace ReVolt.Track
 
     public struct AINode : IBinSerializable
     {
-        public byte Priority;
+        public AINodePriority Priority;
         public byte StartNode;
 
         public short Flags;
@@ -51,7 +74,7 @@ namespace ReVolt.Track
 
         public void ReadBinary(BinaryReader reader)
         {
-            Priority = reader.ReadByte();
+            Priority = (AINodePriority)reader.ReadByte();
             StartNode = reader.ReadByte();
             
             Flags = reader.ReadInt16();
@@ -82,7 +105,7 @@ namespace ReVolt.Track
 
         public void WriteBinary(BinaryWriter writer)
         {
-            writer.Write(Priority);
+            writer.Write((byte)Priority);
             writer.Write(StartNode);
 
             writer.Write(Flags);
