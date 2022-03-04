@@ -567,11 +567,11 @@ public partial class TrackExporter
 
             if (seqEntry.Forwards)
             {
-                placement.ModuleIndex = Modules.Lookup.Changes[(int)placement.ModuleIndex].Forward;
+                placement.ModuleIndex = Modules.Lookup.Changes[placement.ModuleIndex].Forward;
             }
             else
             {
-                placement.ModuleIndex = Modules.Lookup.Changes[(int)placement.ModuleIndex].Reverse;
+                placement.ModuleIndex = Modules.Lookup.Changes[placement.ModuleIndex].Reverse;
 
                 if ((placement.ModuleIndex >= (int)Modules.ID.TWM_DIP_R && placement.ModuleIndex <= (int)Modules.ID.TWM_HUMP_XT_2)
                     || placement.ModuleIndex == (int)Modules.ID.TWM_RAMP_00_2)
