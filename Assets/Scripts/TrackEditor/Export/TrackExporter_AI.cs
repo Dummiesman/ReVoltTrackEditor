@@ -33,16 +33,16 @@ public partial class TrackExporter
 
     private readonly List<ReVolt.TrackUnit.AINode> processedAiNodes = new List<ReVolt.TrackUnit.AINode>(1024);
 
-    private IEnumerable<Tuple<Vector3, Vector3, float>> EnumRoute(ReVolt.TrackUnit.Route route, int direction, bool flipped)
+    private IEnumerable<Tuple<Vector3, Vector3, float, ReVolt.Track.AINodePriority>> EnumRoute(ReVolt.TrackUnit.Route route, int direction, bool flipped)
     {
         for (int i = 0; i < route.Nodes.Count; i++)
         {
             int index = (direction < 0) ? route.Nodes.Count - i - 1 : i;
             var node = route.Nodes[index];
             if (flipped)
-                yield return new Tuple<Vector3, Vector3, float>(node.GreenPosition, node.RedPosition, 1f - node.RacingLine);
+                yield return new Tuple<Vector3, Vector3, float, ReVolt.Track.AINodePriority>(node.GreenPosition, node.RedPosition, 1f - node.RacingLine, node.Priority);
             else
-                yield return new Tuple<Vector3, Vector3, float>(node.RedPosition, node.GreenPosition, node.RacingLine);
+                yield return new Tuple<Vector3, Vector3, float, ReVolt.Track.AINodePriority>(node.RedPosition, node.GreenPosition, node.RacingLine, node.Priority);
         }
     }
 
@@ -118,11 +118,11 @@ public partial class TrackExporter
             return;
         }
 
-        foreach ((Vector3 redNode, Vector3 greenNode, float racingLine) in EnumRoute(startModule.Routes[0], 1, false))
+        foreach ((Vector3 redNode, Vector3 greenNode, float racingLine, ReVolt.Track.AINodePriority priority) in EnumRoute(startModule.Routes[0], 1, false))
         {
             lastRedPos = startModMatrix.MultiplyPoint3x4(redNode);
             lastGreenPos = startModMatrix.MultiplyPoint3x4(greenNode);
-            processedAiNodes.Add(new ReVolt.TrackUnit.AINode() { GreenPosition = lastGreenPos, RedPosition = lastRedPos, RacingLine = racingLine });
+            processedAiNodes.Add(new ReVolt.TrackUnit.AINode() { GreenPosition = lastGreenPos, RedPosition = lastRedPos, RacingLine = racingLine, Priority = priority });
         }
 
         //now go through the rest of the modules
@@ -142,20 +142,21 @@ public partial class TrackExporter
             var modMatrix = MakeModuleMatrix(placement);
 
             bool first = true;
-            foreach((Vector3 redNode, Vector3 greenNode, float racingLine) in EnumRoute(module.Routes[routeIndex], direction, flipped))
+            foreach((Vector3 redNode, Vector3 greenNode, float racingLine, ReVolt.Track.AINodePriority priority) in EnumRoute(module.Routes[routeIndex], direction, flipped))
             {
                 //merge and blend if first
                 if (first)
                 {
                     first = false;
                     processedAiNodes[AINodeCount - 1].RacingLine = (processedAiNodes[AINodeCount - 1].RacingLine + racingLine) / 2f;
+                    processedAiNodes[AINodeCount - 1].Priority = priority;
                     continue;
                 }
 
                 // add the rest of the nodes to the list
                 lastRedPos = modMatrix.MultiplyPoint3x4(redNode);
                 lastGreenPos = modMatrix.MultiplyPoint3x4(greenNode);
-                processedAiNodes.Add(new ReVolt.TrackUnit.AINode() { GreenPosition = lastGreenPos, RedPosition = lastRedPos, RacingLine = racingLine });
+                processedAiNodes.Add(new ReVolt.TrackUnit.AINode() { GreenPosition = lastGreenPos, RedPosition = lastRedPos, RacingLine = racingLine, Priority = priority });
             }
         }
 
@@ -191,6 +192,7 @@ public partial class TrackExporter
                 CenterSpeed = 30,
                 PreviousLinkIDs = new int[2] { (i + (AINodeCount - 1)) % AINodeCount, -1 },
                 NextLinkIDs = new int[2] { (i + 1) % AINodeCount, -1 },
+                Priority = node.Priority,
                 RedEnd = new ReVolt.Track.AINodeEnd()
                 {
                     Speed = 30,

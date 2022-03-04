@@ -131,6 +131,16 @@ namespace ReVolt.TrackUnit
                 var module = new Module();
                 module.ReadBinary(reader);
                 Modules.Add(module);
+
+                // set AI node priorities
+                // this is really yucky
+                foreach(var route in module.Routes)
+                {
+                    foreach(var node in route.Nodes)
+                    {
+                        node.Priority = global::Modules.Lookup.ModulePriority[i];
+                    }
+                }
             }
 
             this.TPageCount = reader.ReadUInt16();

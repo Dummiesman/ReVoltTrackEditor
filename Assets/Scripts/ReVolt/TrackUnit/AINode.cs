@@ -26,6 +26,7 @@ namespace ReVolt.TrackUnit
     {
         public Vector3 GreenPosition;
         public Vector3 RedPosition;
+        public ReVolt.Track.AINodePriority Priority = ReVolt.Track.AINodePriority.RacingLine;
 
         /// <summary>
         /// The normalized position of the racing line between RedPosition and GreenPosition
