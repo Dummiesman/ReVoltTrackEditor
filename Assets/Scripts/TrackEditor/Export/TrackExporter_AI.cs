@@ -118,10 +118,10 @@ public partial class TrackExporter
             return;
         }
 
-        foreach ((Vector3 redNode, Vector3 greenNode, float racingLine, ReVolt.Track.AINodePriority priority) in EnumRoute(startModule.Routes[0], 1, false))
+        foreach ((var redNodePos, var greenNodePos, float racingLine, var priority) in EnumRoute(startModule.Routes[0], 1, false))
         {
-            lastRedPos = startModMatrix.MultiplyPoint3x4(redNode);
-            lastGreenPos = startModMatrix.MultiplyPoint3x4(greenNode);
+            lastRedPos = startModMatrix.MultiplyPoint3x4(redNodePos);
+            lastGreenPos = startModMatrix.MultiplyPoint3x4(greenNodePos);
             processedAiNodes.Add(new ReVolt.TrackUnit.AINode() { GreenPosition = lastGreenPos, RedPosition = lastRedPos, RacingLine = racingLine, Priority = priority });
         }
 
@@ -142,7 +142,7 @@ public partial class TrackExporter
             var modMatrix = MakeModuleMatrix(placement);
 
             bool first = true;
-            foreach((Vector3 redNode, Vector3 greenNode, float racingLine, ReVolt.Track.AINodePriority priority) in EnumRoute(module.Routes[routeIndex], direction, flipped))
+            foreach((var redNodePos, var greenNodePos, float racingLine, var priority) in EnumRoute(module.Routes[routeIndex], direction, flipped))
             {
                 //merge and blend if first
                 if (first)
@@ -154,8 +154,8 @@ public partial class TrackExporter
                 }
 
                 // add the rest of the nodes to the list
-                lastRedPos = modMatrix.MultiplyPoint3x4(redNode);
-                lastGreenPos = modMatrix.MultiplyPoint3x4(greenNode);
+                lastRedPos = modMatrix.MultiplyPoint3x4(redNodePos);
+                lastGreenPos = modMatrix.MultiplyPoint3x4(greenNodePos);
                 processedAiNodes.Add(new ReVolt.TrackUnit.AINode() { GreenPosition = lastGreenPos, RedPosition = lastRedPos, RacingLine = racingLine, Priority = priority });
             }
         }
