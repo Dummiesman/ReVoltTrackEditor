@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using ReVolt.TrackUnit;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using ReVolt.TrackUnit;
 
 public struct ZoneSequenceEntry
 {
@@ -59,15 +59,14 @@ struct PipeWeld
 [System.Flags]
 enum BridgeFlags
 {
-    NONE = 0,
-    LOWER_DECK_REVERSED = 1,
-    UPPER_DECK_REVERSED = 2
+    None,
+    LowerDeckReversed,
+    UpperDeckReversed
 }
 
 public partial class TrackExporter
 {
-    public bool LastZoneIsPipe => (zoneSequence.Count != 0) ? zones[zoneSequence[zoneSequence.Count - 1].ZoneID].IsPipe
-                                                            : false;
+    public bool LastZoneIsPipe => zoneSequence.Count != 0 && zones[zoneSequence.Last().ZoneID].IsPipe;
     public bool TrackFormsLoop { get; private set; }
     public float TrackLength => lapDistance;
     public IReadOnlyList<ZoneSequenceEntry> ZoneSequence => zoneSequence;
@@ -110,18 +109,18 @@ public partial class TrackExporter
 
     private readonly Vector3[][] rootVertsArray = new Vector3[][]
     {
-        new Vector3[]{ new Vector3(-RVConstants.SMALL_CUBE_HALF, 0f, RVConstants.SMALL_CUBE_HALF), new Vector3(RVConstants.SMALL_CUBE_HALF, 0f, RVConstants.SMALL_CUBE_HALF)},
-        new Vector3[]{ new Vector3(RVConstants.SMALL_CUBE_HALF, 0f, RVConstants.SMALL_CUBE_HALF), new Vector3(RVConstants.SMALL_CUBE_HALF, 0f, -RVConstants.SMALL_CUBE_HALF) },
-        new Vector3[]{ new Vector3(RVConstants.SMALL_CUBE_HALF, 0f, -RVConstants.SMALL_CUBE_HALF), new Vector3(-RVConstants.SMALL_CUBE_HALF, 0f, -RVConstants.SMALL_CUBE_HALF) },
-        new Vector3[]{ new Vector3(-RVConstants.SMALL_CUBE_HALF, 0f, -RVConstants.SMALL_CUBE_HALF), new Vector3(-RVConstants.SMALL_CUBE_HALF, 0f, RVConstants.SMALL_CUBE_HALF) }
+        new []{ new Vector3(-RVConstants.SMALL_CUBE_HALF, 0f, RVConstants.SMALL_CUBE_HALF), new Vector3(RVConstants.SMALL_CUBE_HALF, 0f, RVConstants.SMALL_CUBE_HALF)},
+        new []{ new Vector3( RVConstants.SMALL_CUBE_HALF, 0f,  RVConstants.SMALL_CUBE_HALF), new Vector3(RVConstants.SMALL_CUBE_HALF, 0f, -RVConstants.SMALL_CUBE_HALF) },
+        new []{ new Vector3( RVConstants.SMALL_CUBE_HALF, 0f, -RVConstants.SMALL_CUBE_HALF), new Vector3(-RVConstants.SMALL_CUBE_HALF, 0f, -RVConstants.SMALL_CUBE_HALF) },
+        new []{ new Vector3(-RVConstants.SMALL_CUBE_HALF, 0f, -RVConstants.SMALL_CUBE_HALF), new Vector3(-RVConstants.SMALL_CUBE_HALF, 0f, RVConstants.SMALL_CUBE_HALF) }
     };
 
     private readonly Vector3[] rootNormalsArray = new Vector3[]
     {
-        new Vector3(0f, 0f, 1f),
-        new Vector3(1f, 0f, 0f),
-        new Vector3(0f, 0f, -1f),
-        new Vector3(-1f, 0f, 0f)
+        Vector3.forward,
+        Vector3.right,
+        Vector3.back,
+        Vector3.left
     };
 
     private Matrix4x4[] wallMatrices;
@@ -463,14 +462,14 @@ public partial class TrackExporter
             }
         }
 
-        BridgeFlags flags = BridgeFlags.NONE;
+        BridgeFlags flags = BridgeFlags.None;
         int lowerDeckIndex = (elevation[0] < elevation[1]) ? 0 : 1;
         int upperDeckIndex = 1 - lowerDeckIndex;
 
         if(reversed[lowerDeckIndex])
-            flags |= BridgeFlags.LOWER_DECK_REVERSED;
+            flags |= BridgeFlags.LowerDeckReversed;
         if (reversed[upperDeckIndex])
-            flags |= BridgeFlags.UPPER_DECK_REVERSED;
+            flags |= BridgeFlags.UpperDeckReversed;
 
         return flags;
     }
@@ -484,11 +483,11 @@ public partial class TrackExporter
                 int moduleid = placement.ModuleIndex - ((int)Modules.ID.TWM_BRIDGE_10_2_N - (int)Modules.ID.TWM_BRIDGE_10_2);
                 var flags = GetBridgeFlags(placement);
 
-                if((flags & BridgeFlags.LOWER_DECK_REVERSED) != 0)
+                if((flags & BridgeFlags.LowerDeckReversed) != 0)
                 {
                     placement.Rotation = ReverseDirection(placement.Rotation);
                 }
-                if(flags == BridgeFlags.LOWER_DECK_REVERSED || flags == BridgeFlags.UPPER_DECK_REVERSED)
+                if(flags == BridgeFlags.LowerDeckReversed || flags == BridgeFlags.UpperDeckReversed)
                 {
                     moduleid += ((int)Modules.ID.TWM_BRIDGE_10_2_LH - (int)Modules.ID.TWM_BRIDGE_10_2);
                 }
