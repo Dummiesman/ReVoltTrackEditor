@@ -121,6 +121,9 @@ public class TrackEditor : MonoBehaviour
         // init filesystem
         FileHelper.Initialize();
 
+        // update saved file list
+        SavedFilesList.Update();
+
         // load audio
         audioSource = GetComponent<AudioSource>();
         SndPlaceModule = FileHelper.LoadSound("placemod");

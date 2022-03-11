@@ -39,18 +39,12 @@ public class LoadMode : EditorMode
     public Arrow DownArrow;
 
     //
-    private struct TdfInfo
-    {
-        public string Name;
-        public string FilePath;
-    }
-
     const int TEXT_COUNT = 10;
 
-    private bool fileListEmpty => TdfFiles.Length == 0;
+    private bool fileListEmpty => fileCount == 0;
 
     private TMP_Text[] texts;
-    private TdfInfo[] TdfFiles;
+    private int fileCount = 0;
 
     private int cursorPosition;
     private int topPosition;
@@ -72,30 +66,28 @@ public class LoadMode : EditorMode
 
         // update the arrow object states
         UpArrow.Image.enabled = topPosition > 0;
-        DownArrow.Image.enabled = (TdfFiles.Length - topPosition) > TEXT_COUNT;
+        DownArrow.Image.enabled = (fileCount - topPosition) > TEXT_COUNT;
 
         // update the texts
         for (int i = topPosition; i < topPosition + TEXT_COUNT; i++)
         {
-            int textIndex = i - topPosition;
-            var text = texts[textIndex];
-
+            var text = texts[i - topPosition];
             text.color = (i == cursorPosition) ? Color.red : Color.white;
-            text.text = (i < TdfFiles.Length) ? TdfFiles[i].Name : string.Empty;
+            text.text = (i < fileCount) ? SavedFilesList.SavedFiles[i].Name : string.Empty;
         }
     }
 
     private void DeleteSelectedTrack()
     {
-        var fileInfo = TdfFiles[cursorPosition];
-        string question = string.Format(Localization.Lookup(LocString.PROMPT_REALLY_DELETE), fileInfo.Name);
+        var savedFile = SavedFilesList.SavedFiles[cursorPosition];
+        string question = string.Format(Localization.Lookup(LocString.PROMPT_REALLY_DELETE), savedFile.Name);
 
         var postDeleteCursorPos = Mathf.Max(0, cursorPosition - 1);
         int preDeleteCursorPos = cursorPosition;
 
         TrackEditor.Prompt.InitQuestionPrompt(question, () =>
         {
-            File.Delete(fileInfo.FilePath);
+            File.Delete(savedFile.Path);
             TrackEditor.Instance.OpenLoadScreenNoAskSave();
             this.cursorPosition = postDeleteCursorPos;
             OnCursorPosChanged();
@@ -111,9 +103,10 @@ public class LoadMode : EditorMode
 
     private void LoadSelectedTrack()
     {
+        var savedFile = SavedFilesList.SavedFiles[cursorPosition];
         try
         {
-            string trackPath = TdfFiles[cursorPosition].FilePath;
+            string trackPath = savedFile.Path;
             TrackEditor.Track.Clear(); // clear all the old modules
             TrackEditor.Track.Load(trackPath);
             TrackEditor.Instance.SetTrackEditingMode();
@@ -121,45 +114,11 @@ public class LoadMode : EditorMode
         catch (System.Exception ex)
         {
             // something happened, clear the track
-            Debug.LogError($"Failed to load track {new FileInfo(TdfFiles[cursorPosition].FilePath).Name}: {ex}");
+            Debug.LogError($"Failed to load track file: '{new FileInfo(savedFile.Path).Name}': {ex}");
             TrackEditor.Track.Clear();
             TrackEditor.PlaySound(TrackEditor.SndWarning);
             TrackEditor.Instance.SetTrackEditingMode();
         }
-    }
-
-    private void LoadFileList()
-    {
-        string[] files = FileHelper.GetSavedTrackFileList();
-        List<TdfInfo> tempFileList = new List<TdfInfo>();
-
-        // parse file headers
-        for(int i=0; i < files.Length; i++)
-        {
-            string file = files[i];
-            var editorTrack = new EditorTrack();
-            try
-            {
-                using (var reader = new BinaryReader(File.OpenRead(file)))
-                {
-                    editorTrack.ReadBinaryHeader(reader);
-                }
-
-                tempFileList.Add(new TdfInfo()
-                {
-                    FilePath = file,
-                    Name = editorTrack.Name
-                });
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"LoadMode: Failed to parse file header for {new FileInfo(file).Name}: {ex}");
-            }
-        }
-
-        // then, order by name
-        TdfFiles = tempFileList.OrderBy(x => x.Name).ToArray();
-        Debug.Log($"LoadMode: found {TdfFiles.Length} files");
     }
 
     // Virtuals
@@ -169,9 +128,12 @@ public class LoadMode : EditorMode
 
         TrackEditor.Instance.Camera.enabled = false;
 
+        SavedFilesList.Update();
+        fileCount = SavedFilesList.SavedFiles.Count;
+
         topPosition = 0;
         cursorPosition = 0;
-        LoadFileList();
+
         OnCursorPosChanged();
 
         NoTracksText.SetActive(fileListEmpty);
@@ -180,7 +142,6 @@ public class LoadMode : EditorMode
     public override void OnExitMode()
     {
         base.OnExitMode();
-        
         TrackEditor.Instance.Camera.enabled = true;
     }
 
@@ -202,35 +163,22 @@ public class LoadMode : EditorMode
             TrackEditor.Instance.SetTrackEditingMode();
         }
 
-        //move
+        // move
         if (!fileListEmpty)
         {
-            if (Controls.DirectionalMovement.DownPressed())
+            var movementDelta = Controls.DirectionalMovement.GetMovementDelta();
+            if(movementDelta.y != 0)
             {
-                if (cursorPosition == TdfFiles.Length - 1)
+                int nextCursorPosition = cursorPosition + (movementDelta.y * -1);
+                if(nextCursorPosition >= fileCount || nextCursorPosition < 0)
                 {
-                    //at end already
+                    // out of bounds
                     TrackEditor.PlaySound(TrackEditor.SndWarning);
                 }
                 else
                 {
                     TrackEditor.PlaySound(TrackEditor.SndMenuMove);
-                    cursorPosition++;
-                    OnCursorPosChanged();
-                }
-
-            }
-            else if (Controls.DirectionalMovement.UpPressed())
-            {
-                if (cursorPosition == 0)
-                {
-                    //at top already
-                    TrackEditor.PlaySound(TrackEditor.SndWarning);
-                }
-                else
-                {
-                    TrackEditor.PlaySound(TrackEditor.SndMenuMove);
-                    cursorPosition--;
+                    cursorPosition = nextCursorPosition;
                     OnCursorPosChanged();
                 }
             }
