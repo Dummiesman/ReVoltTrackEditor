@@ -20,6 +20,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using System.Linq;
 
 namespace ReVolt.Track
 {
@@ -164,11 +165,12 @@ namespace ReVolt.Track
         public void ReadBinary(BinaryReader reader)
         {
             int nodeCount = reader.ReadUInt16();
-            reader.ReadUInt16(); // link nodes count, unused?
+            reader.ReadUInt16(); // double forward link nodes count, recalculated on save
 
             for(int i=0; i < nodeCount; i++)
             {
                 var node = new AINode();
+                node.ReadBinary(reader);
                 Nodes.Add(node);
             }
 
@@ -178,8 +180,10 @@ namespace ReVolt.Track
 
         public void WriteBinary(BinaryWriter writer)
         {
+            int doubleForwardLinkCount = Nodes.Count(x => x.NextLinkIDs.Min() >= 0);
+        
             writer.Write((ushort)Nodes.Count);
-            writer.Write((ushort)0);
+            writer.Write((ushort)doubleForwardLinkCount);
 
             for(int i=0; i < Nodes.Count; i++)
             {
