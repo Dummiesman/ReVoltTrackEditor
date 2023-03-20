@@ -272,6 +272,7 @@ namespace ReVolt.Track
             // create big cubes
             int numYCubes = Mathf.CeilToInt((max.z - min.z) / size);
             int numXCubes = Mathf.CeilToInt((max.x - min.x) / size);
+            float yCenter = (min.y + max.y) / 2f;
 
             BigCubes.Clear();
 
@@ -286,7 +287,6 @@ namespace ReVolt.Track
                     float xMin = min.x + (x * size);
                     float xMax = min.x + ((x + 1) * size);
                     float xCenter = (xMin + xMax) / 2f;
-                    float yCenter = (min.y + max.y) / 2f;
 
                     BigCubes.Add(new BigCube()
                     {
