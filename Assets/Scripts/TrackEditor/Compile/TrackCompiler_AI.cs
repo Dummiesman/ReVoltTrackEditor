@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-public partial class TrackExporter
+public partial class TrackCompiler
 {
     public bool AIIsValid { get; private set; } = false;
     public int AINodeCount => processedAiNodes.Count;
@@ -95,7 +95,50 @@ public partial class TrackExporter
         return false;
     }
 
-    public void CreateAINodes()
+    private void CreateCompiledAINodes()
+    {
+        CompiledAINodes = new ReVolt.Track.AINodesFile()
+        {
+            TotalDistance = lapDistance,
+            StartNode = 1
+        };
+
+        for (int i = 0; i < AINodeCount; i++)
+        {
+            var node = processedAiNodes[i];
+
+            var fileNode = new ReVolt.Track.AINode()
+            {
+                StartNode = 1,
+                RacingLine = 1f - node.RacingLine,
+                OvertakingLine = 1f - node.RacingLine,
+                RacingLineSpeed = 30,
+                CenterSpeed = 30,
+                PreviousLinkIDs = new int[2] { (i + (AINodeCount - 1)) % AINodeCount, -1 },
+                NextLinkIDs = new int[2] { (i + 1) % AINodeCount, -1 },
+                Priority = node.Priority,
+                RedEnd = new ReVolt.Track.AINodeEnd()
+                {
+                    Speed = 30,
+                    Position = node.RedPosition
+                },
+                GreenEnd = new ReVolt.Track.AINodeEnd()
+                {
+                    Speed = 30,
+                    Position = node.GreenPosition
+                }
+            };
+
+            CompiledAINodes.Nodes.Add(fileNode);
+        }
+
+        if (exportScale != 1f)
+        {
+            CompiledAINodes.Scale(exportScale);
+        }
+    }
+
+    public void CompileAI()
     {
         var perfLogger = new PerfTimeLogger("Export:AI");
         LastAICell = Vector2Int.zero;
@@ -174,52 +217,9 @@ public partial class TrackExporter
         // remove last node, it's on top of the first node
         processedAiNodes.RemoveAt(processedAiNodes.Count - 1);
 
+        // finally, create compiled AINodes
+        CreateCompiledAINodes();
+
         perfLogger.Log("Create");
-    }
-
-    public void WriteAINodes()
-    {
-        var aiNodesFile = new ReVolt.Track.AINodesFile()
-        {
-            TotalDistance = lapDistance,
-            StartNode = 1
-        };
-
-        for(int i=0; i < AINodeCount; i++)
-        {
-            var node = processedAiNodes[i];
-
-            var fileNode = new ReVolt.Track.AINode()
-            {
-                StartNode = 1,
-                RacingLine = 1f - node.RacingLine,
-                OvertakingLine = 1f - node.RacingLine,
-                RacingLineSpeed = 30,
-                CenterSpeed = 30,
-                PreviousLinkIDs = new int[2] { (i + (AINodeCount - 1)) % AINodeCount, -1 },
-                NextLinkIDs = new int[2] { (i + 1) % AINodeCount, -1 },
-                Priority = node.Priority,
-                RedEnd = new ReVolt.Track.AINodeEnd()
-                {
-                    Speed = 30,
-                    Position = node.RedPosition
-                },
-                GreenEnd = new ReVolt.Track.AINodeEnd()
-                {
-                    Speed = 30,
-                    Position = node.GreenPosition
-                }
-            };
-
-            aiNodesFile.Nodes.Add(fileNode);
-        }
-
-        if(exportScale != 1f)
-        {
-            aiNodesFile.Scale(exportScale);
-        }
-
-        string aiFilePath = Path.Combine(exportPath, $"{trackFolderName}.fan");
-        aiNodesFile.Save(aiFilePath);
     }
 }

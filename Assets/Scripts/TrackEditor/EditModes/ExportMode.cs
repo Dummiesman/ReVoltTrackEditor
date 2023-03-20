@@ -146,44 +146,24 @@ public class ExportMode : EditorMode
         yield return null;
 
         // Create AI, check validity
-        exporter.CreateAINodes();
+        exporter.CompileAI();
         if (!exporter.AIIsValid)
         {
             ContinuityError(exporter);
             yield break;
         }
 
-        // Track is valid
-        // Create reversed exporter
-        var reverseExporter = new TrackExporter(TrackEditor.Track, TrackEditor.TrackUnit, true, exportScale);
-        reverseExporter.Initialize();
-        reverseExporter.CreateAINodes();
-
-        if (!reverseExporter.TrackFormsLoop || !reverseExporter.AIIsValid)
-            reverseExporter = null; // can't export reverse, set to null
-
-        // Create and empty destination folder
-        exporter.CreateTrackFolder();
-        exporter.EmptyTrackFolderContents();
-        reverseExporter?.CreateTrackFolder();
-
-        // Write the AI nodes
-        exporter.WriteAINodes();
-        reverseExporter?.WriteAINodes();
-
         SetExportProgress(0.2f);
         yield return null;
 
         // Create world and collision file
-        var worldTask = Task.Run(() =>
+        var worldTask = Task.Run((System.Action)(() =>
         {
-            exporter.CreateWorld();
-            exporter.WriteWorldFile();
-        });
+            exporter.CompileWorld();
+        }));
         var collisionTask = Task.Run(() =>
         {
-            exporter.CreateCollision();
-            exporter.WriteCollision();
+            exporter.CompileCollision();
         });
 
         while(!worldTask.IsCompleted || !collisionTask.IsCompleted)
@@ -194,22 +174,13 @@ public class ExportMode : EditorMode
             yield return null;
         }
 
-        // Save zones, pos nodes, etc
-        exporter.WritePosNodesFile();
-        exporter.WriteZonesFile();
-
-        reverseExporter?.WritePosNodesFile();
-        reverseExporter?.WriteZonesFile();
-
-        exporter.WriteLightsFile();
-        exporter.WriteObjectsFile();
+        exporter.CompileSmallFiles();
 
         SetExportProgress(0.7f);
         yield return null;
 
-        // Finally, copy textures and write info file
-        exporter.CopyBitmaps();
-        exporter.WriteInfoFile();
+        // Finally, write files
+        exporter.WriteFiles();
 
         perfLogger.Log("Total");
         SetExportProgress(1f);
@@ -225,7 +196,8 @@ public class ExportMode : EditorMode
         
         while(Time.timeSinceLevelLoadAsDouble < ringTimeEnd)
         {
-            bool clockFrame = ((Time.timeSinceLevelLoad * 12f) % 1f) > 0.5f;
+            const double clockBounceRate = 12d;
+            bool clockFrame = ((Time.timeSinceLevelLoadAsDouble * clockBounceRate) % 1d) > 0.5d;
             ClockImage.sprite = (clockFrame) ? JumpyClockRight : JumpyClockLeft;
             yield return null;
         }
@@ -243,8 +215,8 @@ public class ExportMode : EditorMode
         base.Init();
 
         clockLoopSource = GetComponent<AudioSource>();
-        clockLoopSource.clip = FileHelper.LoadSound("Ticktock")
-                            ?? FileHelper.LoadSound("ticktock");
+        clockLoopSource.clip = FileHelper.LoadSound("Ticktock") 
+                               ?? FileHelper.LoadSound("ticktock");
     }
 
     public override void OnEnterMode()

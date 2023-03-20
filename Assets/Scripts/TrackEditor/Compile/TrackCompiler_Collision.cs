@@ -23,9 +23,8 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-public partial class TrackExporter
+public partial class TrackCompiler
 {
-    private ReVolt.Track.CollisionFile collision;
     private List<ReVolt.Track.CollisionPoly>[] cellCollisionBuckets;
 
     private void FixUpCollision(int x, int y)
@@ -148,9 +147,55 @@ public partial class TrackExporter
 
     private void FinalizeCollision()
     {
+       // copy buckets into polys list
+        List<ReVolt.Track.CollisionPoly> polygons = new List<ReVolt.Track.CollisionPoly>(ushort.MaxValue);
+        List<int> cellPolyOrigins = new List<int>(cellCollisionBuckets.Length);
+        List<int> cellPolyCounts = new List<int>(cellCollisionBuckets.Length);
+
+        for (int y = 0; y < track.Height; y++)
+        {
+            for (int x = 0; x < track.Width; x++)
+            {
+                var bucket = cellCollisionBuckets[(track.Width * y) + x];
+
+                cellPolyOrigins.Add(polygons.Count);
+                polygons.AddRange(bucket);
+                cellPolyCounts.Add(bucket.Count);
+            }
+        }
+
+        // now merge all cells to their neighbours, half the resolution on each iteration, and repeat
+        // also do the checkerboard iteration
+        int heightResolution = 1;
+        int widthResolution = 1;
+
+        int[] srcBucketOrigins = new int[track.Width * track.Height];
+        int[] srcBucketCounts = new int[track.Width * track.Height];
+
+        int[] adgBucketOrigins = new int[track.Width * track.Height];
+        int[] adgBucketCounts = new int[track.Width * track.Height];
+
+        while (widthResolution <= track.Width && heightResolution <= track.Height)
+        {
+            for(int y=0; y < track.Height; y += heightResolution)
+            {
+                for(int x=(y%2); x < track.Width; x += widthResolution)
+                {
+                    int[] adjacentBucketOrigins = new int[4];
+                    int[] adjacentBucketCounts = new int[4];
+                }
+            }
+
+        }
+    }
+
+    private void FinalizeCollisionV1()
+    {
         // merge each bucket to itself first
         // saves a lot of time later
         bool anyMerged;
+
+        var logger = new PerfTimeLogger("CollMerge");
 
         for(int i=0; i < cellCollisionBuckets.Length; i++)
         {
@@ -159,13 +204,14 @@ public partial class TrackExporter
                 anyMerged = false;
 
                 var bucket = cellCollisionBuckets[i];
-                bool[] mergedArray = new bool[bucket.Count];
+                int bucketCount = bucket.Count;
+                bool[] mergedArray = new bool[bucketCount];
 
-                for (int j = 0; j < bucket.Count; j++)
+                for (int j = 0; j < bucketCount; j++)
                 {
                     if (mergedArray[j])
                         continue;
-                    for (int k = j + 1; k < bucket.Count; k++)
+                    for (int k = j + 1; k < bucketCount; k++)
                     {
                         if (mergedArray[k])
                             continue;
@@ -180,7 +226,7 @@ public partial class TrackExporter
                     }
                 }
 
-                for (int j = bucket.Count - 1; j >= 0; j--)
+                for (int j = bucketCount - 1; j >= 0; j--)
                 {
                     if (mergedArray[j])
                         bucket.RemoveAt(j);
@@ -188,23 +234,26 @@ public partial class TrackExporter
             } while (anyMerged);
         }
 
+        logger.Log("Intra");
+
         // copy buckets into polys list
         foreach (var bucket in cellCollisionBuckets)
-            collision.Polyhedrons.AddRange(bucket);
+            CompiledCollision.Polyhedrons.AddRange(bucket);
 
         // merge whole track
         do
         {
             anyMerged = false;
 
-            var bucket = collision.Polyhedrons;
+            var bucket = CompiledCollision.Polyhedrons;
+            int bucketCount = bucket.Count;
             bool[] mergedArray = new bool[bucket.Count];
 
-            for (int j = 0; j < bucket.Count; j++)
+            for (int j = 0; j < bucketCount; j++)
             {
                 if (mergedArray[j])
                     continue;
-                for (int k = j+1; k < bucket.Count; k++)
+                for (int k = j+1; k < bucketCount; k++)
                 {
                     if (mergedArray[k])
                         continue;
@@ -219,12 +268,14 @@ public partial class TrackExporter
                 }
             }
 
-            for (int j = bucket.Count - 1; j >= 0; j--)
+            for (int j = bucketCount - 1; j >= 0; j--)
             {
                 if (mergedArray[j])
                     bucket.RemoveAt(j);
             }
         } while (anyMerged);
+
+        logger.Log("Inter");
     }
 
     private List<ReVolt.Track.CollisionPoly> UnitToCollisionBucket(Unit unit, Matrix4x4 matrix, bool[] wallData = null)
@@ -351,9 +402,9 @@ public partial class TrackExporter
         return UnitToCollisionBucket(unit, cellMatrix, wallData);
     }
 
-    public void CreateCollision()
+    public void CompileCollision()
     {
-        collision = new ReVolt.Track.CollisionFile();
+        CompiledCollision = new ReVolt.Track.CollisionFile();
         var perfLogger = new PerfTimeLogger("Export:Collision");
 
         // create user track collision
@@ -375,27 +426,21 @@ public partial class TrackExporter
         for (int i = 0; i < 6; i++)
         {
             var wallUnit = unitFile.Units[i + unitFile.WallIndex];
-            collision.Polyhedrons.AddRange(UnitToCollisionBucket(wallUnit, wallMatrices[i]));
+            CompiledCollision.Polyhedrons.AddRange(UnitToCollisionBucket(wallUnit, wallMatrices[i]));
         }
         perfLogger.Log("Add walls");
 
         // finalize collision (merges polygons and adds the final results to the collision file)
-        FinalizeCollision();
+        FinalizeCollisionV1();
         perfLogger.Log("Merge");
 
-        collision.CreateGrid(RVConstants.SMALL_CUBE_SIZE);
+        CompiledCollision.CreateGrid(RVConstants.SMALL_CUBE_SIZE);
 
         // scale
         if (exportScale != 1f)
         {
-            collision.Scale(exportScale);
+            CompiledCollision.Scale(exportScale);
             perfLogger.Log("Scale");
         }
-    }
-
-    public void WriteCollision()
-    {
-        string collisionFilePath = Path.Combine(exportPath, $"{trackFolderName}.ncp");
-        collision.Save(collisionFilePath);
     }
 }

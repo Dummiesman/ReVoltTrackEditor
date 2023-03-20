@@ -23,9 +23,8 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-public partial class TrackExporter
+public partial class TrackCompiler
 {
-    private ReVolt.Track.WorldFile world;
     private ReVolt.Track.SmallCube[] cellCubes;
 
     private Color GetShadedColor(Color color, Vector3 normal)
@@ -265,9 +264,9 @@ public partial class TrackExporter
         }
     }
 
-    public void CreateWorld()
+    public void CompileWorld()
     {
-        world = new ReVolt.Track.WorldFile();
+        CompiledWorld = new ReVolt.Track.WorldFile();
         var perfLogger = new PerfTimeLogger("Export:World");
 
         // create user track visuals
@@ -286,32 +285,26 @@ public partial class TrackExporter
         perfLogger.Log("Remove extra polygons");
 
         // add user track
-        world.SmallCubes.AddRange(cellCubes);
+        CompiledWorld.SmallCubes.AddRange(cellCubes);
 
         // add external walls
         for (int i = 0; i < 6; i++)
         {
             var wallUnit = unitFile.Units[i + unitFile.WallIndex];
             var wallCube = UnitToSmallCube(wallUnit, wallMatrices[i]);
-            world.SmallCubes.AddRange(wallCube.SplitCube(RVConstants.SMALL_CUBE_SIZE));
+            CompiledWorld.SmallCubes.AddRange(wallCube.SplitCube(RVConstants.SMALL_CUBE_SIZE));
         }
         perfLogger.Log("Create walls");
 
         // generate big cubes
-        world.GenerateBigCubes(RVConstants.BIG_CUBE_SIZE);
+        CompiledWorld.GenerateBigCubes(RVConstants.BIG_CUBE_SIZE);
         perfLogger.Log("Create big cubes");
 
         // scale
         if (exportScale != 1f)
         {
-            world.Scale(exportScale);
+            CompiledWorld.Scale(exportScale);
             perfLogger.Log("Scale");
         }
-    }
-
-    public void WriteWorldFile()
-    {
-        string worldFilePath = Path.Combine(exportPath, $"{trackFolderName}.w");
-        world.Save(worldFilePath);
     }
 }
