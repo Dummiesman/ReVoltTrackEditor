@@ -80,9 +80,9 @@ public static class FileHelper
         string fullPathLower = Path.Combine(rootPath, $"{image}.bmp");
         string fullPathUpper = Path.Combine(rootPath, $"{image}.BMP");
         if (File.Exists(fullPathLower))
-            return new B83.Image.BMP.BMPLoader().LoadBMP(fullPathLower).ToTexture2D();
+            return BMPLoader.Load(fullPathLower);
         else if (File.Exists(fullPathUpper))
-            return new B83.Image.BMP.BMPLoader().LoadBMP(fullPathUpper).ToTexture2D();
+            return BMPLoader.Load(fullPathUpper);
         else
             return Texture2D.whiteTexture;
     }
