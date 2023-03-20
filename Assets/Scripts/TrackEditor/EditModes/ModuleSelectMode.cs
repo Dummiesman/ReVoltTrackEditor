@@ -196,6 +196,7 @@ public class ModuleSelectMode : EditorMode
         ModuleCamera.gameObject.SetActive(true);
         ModuleCamera.transform.position = ModulePreviewPosition - (Vector3.forward * 1.5f) + (Vector3.up * 1.5f);
         ModuleCamera.transform.LookAt(ModulePreviewPosition);
+        UpdateCamera();
 
         TrackEditor.Instance.Camera.gameObject.SetActive(false);
     }
