@@ -8,5 +8,5 @@ Raise Module,Page Up,Y Button
 Lower Module,Page Down,X Button
 Rotate Module,Space,Trigger Buttons
 Toggle Surface,T,Left Stick Button
-Rotate Camera,Numpad +/-,Right Stick
+Rotate Camera,Brackets [ ],Right Stick
 Menu,Escape,START Button

@@ -18,12 +18,18 @@
 */
 
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
 public class Controls 
 {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+    [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true, CallingConvention = CallingConvention.Winapi)]
+    public static extern short GetKeyState(int keyCode);
+#endif
+
     public class SaveScreen
     {
         public static bool GamepadSpacePressed()
@@ -45,8 +51,8 @@ public class Controls
     {
         public static bool DeletePressed()
         {
-            if (Keyboard.current is Keyboard keyboard && keyboard.deleteKey.wasPressedThisFrame)
-                return true;
+            if (Keyboard.current is Keyboard keyboard)
+                return keyboard.deleteKey.wasPressedThisFrame || (!IsNumLockActive() && keyboard.numpadPeriodKey.wasPressedThisFrame);
             if (Gamepad.current is Gamepad gamepad && gamepad.buttonWest.wasPressedThisFrame)
                 return true;
             return false;
@@ -83,8 +89,8 @@ public class Controls
         {
             if (Gamepad.current is Gamepad gamepad && gamepad.buttonEast.wasPressedThisFrame)
                 return true;
-            if (Keyboard.current is Keyboard keyboard && keyboard.deleteKey.wasPressedThisFrame)
-                return true;
+            if (Keyboard.current is Keyboard keyboard)
+                return keyboard.deleteKey.wasPressedThisFrame || (!IsNumLockActive() && keyboard.numpadPeriodKey.wasPressedThisFrame);
             return false;
         }
 
@@ -137,8 +143,8 @@ public class Controls
         {
             if (Gamepad.current is Gamepad gamepad && gamepad.buttonNorth.wasPressedThisFrame)
                 return true;
-            if (Keyboard.current is Keyboard keyboard && keyboard.pageUpKey.wasPressedThisFrame)
-                return true;
+            if (Keyboard.current is Keyboard keyboard)
+                return keyboard.pageUpKey.wasPressedThisFrame || (!IsNumLockActive() && keyboard.numpad9Key.wasPressedThisFrame);
             return false;
         }
 
@@ -146,8 +152,8 @@ public class Controls
         {
             if (Gamepad.current is Gamepad gamepad && gamepad.buttonWest.wasPressedThisFrame)
                 return true;
-            if (Keyboard.current is Keyboard keyboard && keyboard.pageDownKey.wasPressedThisFrame)
-                return true;
+            if (Keyboard.current is Keyboard keyboard)
+                return keyboard.pageDownKey.wasPressedThisFrame || (!IsNumLockActive() && keyboard.numpad3Key.wasPressedThisFrame);
             return false;
         }
 
@@ -187,9 +193,9 @@ public class Controls
             }
             if (Keyboard.current is Keyboard keyboard)
             {
-                if (keyboard.numpadMinusKey.wasPressedThisFrame)
+                if (keyboard.numpadMinusKey.wasPressedThisFrame || keyboard.leftBracketKey.wasPressedThisFrame)
                     return 1;
-                if (keyboard.numpadPlusKey.wasPressedThisFrame)
+                if (keyboard.numpadPlusKey.wasPressedThisFrame || keyboard.rightBracketKey.wasPressedThisFrame)
                     return -1;
             }
             return 0;
@@ -352,6 +358,15 @@ public class Controls
                 return true;
             return false;
         }
+    }
+
+    public static bool IsNumLockActive()
+    {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+        return (((ushort)GetKeyState(0x90)) & 0xffff) != 0;
+#else
+        return true;
+#endif
     }
 
     public static bool AnyButtonPressed()
