@@ -68,7 +68,10 @@ public static class FileHelper
     public static Texture2D LoadTPage(int num)
     {
         var image = LoadImage($"tpage_{num:D2}");
-        image.wrapMode = TextureWrapMode.Clamp;
+        if (image != null)
+        {
+            image.wrapMode = TextureWrapMode.Clamp;
+        }
         return image;
     }
 
