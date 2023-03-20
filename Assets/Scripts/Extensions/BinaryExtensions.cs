@@ -180,16 +180,16 @@ public static class BinaryExtensions
     public static string ReadPaddedString(this BinaryReader reader)
     {
         byte len = reader.ReadByte();
-        string str = string.Empty;
+        var builder = new System.Text.StringBuilder(len);
 
         for (int i = 0; i < len; i++)
-            str += reader.ReadChar();
+            builder.Append(reader.ReadChar());
 
         reader.ReadByte(); // pad
         if ((len % 2) > 0)
             reader.ReadByte(); // pad
 
-        return str;
+        return builder.ToString();
     }
 
     public static void WritePaddedString(this BinaryWriter writer, string str)
