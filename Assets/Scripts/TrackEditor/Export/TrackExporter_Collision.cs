@@ -44,12 +44,10 @@ public partial class TrackExporter
                 continue;
             
             var adjBucket = adjacentBuckets[adjBucketIndex];
-            HashSet<int> removePolyIndicesAdj = new HashSet<int>();
-            HashSet<int> removePolyIndices = new HashSet<int>();
 
-            for (int i = 0; i < srcBucket.Count; i++)
+            for (int i = srcBucket.Count - 1; i >= 0; i--)
             {
-                for (int j = 0; j < adjBucket.Count; j++)
+                for (int j = adjBucket.Count - 1; j >= 0; j--)
                 {
                     var polyI = srcBucket[i];
                     var polyJ = adjBucket[j];
@@ -70,18 +68,13 @@ public partial class TrackExporter
 
                         if (matching)
                         {
-                            removePolyIndices.Add(i);
-                            removePolyIndicesAdj.Add(j);
+                            srcBucket.RemoveAt(i);
+                            adjBucket.RemoveAt(j);
+                            break;
                         }
                     }
                 }
             }
-
-            // remove them
-            foreach (int polyIndex in removePolyIndicesAdj.OrderByDescending(x => x))
-                adjBucket.RemoveAt(polyIndex);
-            foreach (int polyIndex in removePolyIndices.OrderByDescending(x => x))
-                srcBucket.RemoveAt(polyIndex);
         }
     }
 

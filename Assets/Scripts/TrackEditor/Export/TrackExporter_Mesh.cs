@@ -190,12 +190,10 @@ public partial class TrackExporter
                 continue;
 
             var adjCube = adjacentCubes[adjCubeIndex];
-            HashSet<int> removePolyIndicesAdj = new HashSet<int>();
-            HashSet<int> removePolyIndices = new HashSet<int>();
 
-            for (int i = 0; i < srcCube.Polygons.Count; i++)
+            for (int i = srcCube.Polygons.Count - 1; i >= 0; i--)
             {
-                for (int j = 0; j < adjCube.Polygons.Count; j++)
+                for (int j = adjCube.Polygons.Count - 1; j >= 0; j--)
                 {
                     var srcPoly = srcCube.Polygons[i];
                     var adjPoly = adjCube.Polygons[j];
@@ -215,14 +213,16 @@ public partial class TrackExporter
                     int startVertex = 0; 
                     bool matching = false;
                     
-                    for(int k=0; k < vertCount; k++)
+                    for(int k=0; k < vertCount && !matching; k++)
                     {
-                        matching = (srcCube.Vertices[srcPoly.VertexIndices[0]].Position - adjCube.Vertices[adjPoly.VertexIndices[k]].Position).sqrMagnitude <= FIX_TOLERANCE;
-                        if (matching)
-                        {
-                            startVertex = k;
-                            break;
-                        }
+                        var vertA = srcCube.Vertices[srcPoly.VertexIndices[0]].Position;
+                        var vertB = adjCube.Vertices[adjPoly.VertexIndices[k]].Position;
+
+                        matching = Mathf.Abs(vertA.x - vertB.x) <= FIX_TOLERANCE
+                                && Mathf.Abs(vertA.y - vertB.y) <= FIX_TOLERANCE 
+                                && Mathf.Abs(vertA.z - vertB.z) <= FIX_TOLERANCE;
+
+                        startVertex = k;
                     }
 
                     // can't find a matching start vertex
@@ -234,22 +234,23 @@ public partial class TrackExporter
                     {
                         int index0 = k;
                         int index1 = mod(startVertex - k, vertCount);
-                        matching = (srcCube.Vertices[srcPoly.VertexIndices[k]].Position - adjCube.Vertices[adjPoly.VertexIndices[index1]].Position).sqrMagnitude <= FIX_TOLERANCE;
+
+                        var vertA = srcCube.Vertices[srcPoly.VertexIndices[index0]].Position;
+                        var vertB = adjCube.Vertices[adjPoly.VertexIndices[index1]].Position;
+
+                        matching = Mathf.Abs(vertA.x - vertB.x) <= FIX_TOLERANCE
+                                && Mathf.Abs(vertA.y - vertB.y) <= FIX_TOLERANCE
+                                && Mathf.Abs(vertA.z - vertB.z) <= FIX_TOLERANCE;
                     }
 
                     if (matching)
                     {
-                        removePolyIndices.Add(i);
-                        removePolyIndicesAdj.Add(j);
+                        srcCube.Polygons.RemoveAt(i);
+                        adjCube.Polygons.RemoveAt(j);
+                        break;
                     }
                 }
             }
-
-            // remove them
-            foreach (int polyIndex in removePolyIndicesAdj.OrderByDescending(x => x))
-                adjCube.Polygons.RemoveAt(polyIndex);
-            foreach (int polyIndex in removePolyIndices.OrderByDescending(x => x))
-                srcCube.Polygons.RemoveAt(polyIndex);
         }
     }
 
