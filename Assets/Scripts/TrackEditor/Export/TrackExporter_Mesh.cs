@@ -38,7 +38,7 @@ public partial class TrackExporter
     {
         return GetShadedColor(Color.Lerp(EditorConstants.RootColorInGameMin,
                                          EditorConstants.RootColorInGameMax,
-                                         height / maxElevation),
+                                         Mathf.Abs(height) / (maxElevation * RVConstants.SMALL_CUBE_SIZE)),
                                          normal);
     }
 

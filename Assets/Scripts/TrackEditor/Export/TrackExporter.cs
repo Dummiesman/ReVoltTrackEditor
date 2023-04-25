@@ -82,7 +82,7 @@ public partial class TrackExporter
     private readonly string exportPath;
     private readonly string trackFolderName;
 
-    private const float maxElevation = EditorConstants.MaxElevationSteps * -RVConstants.ElevationStep;
+    private float maxElevation;
 
     private List<TrackZone> zones = new List<TrackZone>();
     private List<ZoneSequenceEntry> zoneSequence = new List<ZoneSequenceEntry>();
@@ -780,6 +780,17 @@ public partial class TrackExporter
         {
             wallMatrices[i] = MakeCellMatrix(wallCells[i].x, 0, wallCells[i].y, 0);
         }
+
+        // get max elevation
+        maxElevation = EditorConstants.MaxElevation;
+        foreach(var mod in track.GetAllModuleRootPlacements())
+        {
+            maxElevation = Mathf.Max(mod.Elevation, maxElevation);
+        }
+
+        // raise roof if needed
+        float roofRaise = Mathf.Max(0f, maxElevation - EditorConstants.MaxElevation);
+        wallMatrices[0].SetColumn(3, new Vector3(0f, roofRaise * RVConstants.SMALL_CUBE_SIZE * -1f, 0f));
 
         // init zoning stuff
         CreateZoneList();
