@@ -47,9 +47,10 @@ public partial class TrackExporter
 
             for (int i = srcBucket.Count - 1; i >= 0; i--)
             {
+                var polyI = srcBucket[i];
+
                 for (int j = adjBucket.Count - 1; j >= 0; j--)
                 {
-                    var polyI = srcBucket[i];
                     var polyJ = adjBucket[j];
 
                     // only remove facing polys if they're the same vert count and facing each other

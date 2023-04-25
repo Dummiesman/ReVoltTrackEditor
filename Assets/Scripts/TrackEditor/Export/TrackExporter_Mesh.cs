@@ -193,12 +193,13 @@ public partial class TrackExporter
 
             for (int i = srcCube.Polygons.Count - 1; i >= 0; i--)
             {
+                var srcPoly = srcCube.Polygons[i];
+                var normalI = srcCube.Vertices[srcPoly.VertexIndices[0]].Normal;
+
                 for (int j = adjCube.Polygons.Count - 1; j >= 0; j--)
                 {
-                    var srcPoly = srcCube.Polygons[i];
+                    
                     var adjPoly = adjCube.Polygons[j];
-
-                    var normalI = srcCube.Vertices[srcPoly.VertexIndices[0]].Normal;
                     var normalJ = adjCube.Vertices[adjPoly.VertexIndices[0]].Normal;
 
                     bool facing = (srcPoly.Flags & ReVolt.Track.PolygonFlags.Quad) == (adjPoly.Flags & ReVolt.Track.PolygonFlags.Quad) &&
