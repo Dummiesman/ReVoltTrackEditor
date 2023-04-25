@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace ReVolt.TrackUnit
 {
-    public class Instance
+    public class Instance : IBinSerializable
     {
         public int UnitID;
         public int Direction;
@@ -35,6 +35,17 @@ namespace ReVolt.TrackUnit
             this.Direction = reader.ReadUInt16();
             this.Position = new Vector2Int(reader.ReadInt16(), reader.ReadInt16());
             this.Elevation = reader.ReadInt16();
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write((ushort)UnitID);
+            writer.Write((ushort)Direction);
+            
+            writer.Write((short)Position.x);
+            writer.Write((short)Position.y);
+
+            writer.Write((short)Elevation);
         }
     }
 }

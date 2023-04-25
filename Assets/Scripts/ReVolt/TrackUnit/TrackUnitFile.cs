@@ -23,11 +23,11 @@ using UnityEngine;
 
 namespace ReVolt.TrackUnit
 {
-    public class TrackUnitFile
+    public class TrackUnitFile : IBinSerializable
     {
         public const int MAX_MODULE_ROUTES = 2;
         private const int MAGIC = 0x20555452;
-
+        private const ushort VERSION = 13;
 
         public readonly List<Vector3> Vertices = new List<Vector3>();
         public readonly List<Vector2> UVs = new List<Vector2>();
@@ -47,10 +47,10 @@ namespace ReVolt.TrackUnit
         public void ReadBinary(BinaryReader reader)
         {
             int magic = reader.ReadInt32();
-            int version = reader.ReadUInt16();
+            ushort version = reader.ReadUInt16();
             if (magic != MAGIC)
                 throw new InvalidDataException("Incorrect RTU magic.");
-            if (version != 13)
+            if (version != VERSION)
                 throw new InvalidDataException("Incorrect trackunit version.");
 
             Vertices.Clear();
@@ -123,6 +123,9 @@ namespace ReVolt.TrackUnit
                 var unit = new Unit();
                 unit.ReadBinary(reader);
                 Units.Add(unit);
+
+                // the original trackunit file had garbage surface indices
+                unit.TrimExcessSurfaces(this);
             }
 
             int moduleCount = reader.ReadUInt16();
@@ -145,6 +148,71 @@ namespace ReVolt.TrackUnit
 
             this.TPageCount = reader.ReadUInt16();
             this.WallIndex = reader.ReadUInt16();
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write(MAGIC);
+            writer.Write(VERSION);
+            
+            writer.Write((ushort)1); // unused VALID_TARGETS?
+
+            writer.Write((ushort)Vertices.Count);
+            for(int i=0; i < Vertices.Count; i++)
+            {
+                writer.WriteVector3(Vertices[i]);
+            }
+
+            writer.Write((ushort)Polygons.Count);
+            for (int i = 0; i < Polygons.Count; i++)
+            {
+                Polygons[i].WriteBinary(writer);
+            }
+            
+            writer.Write((ushort)ColorPolygons.Count);
+            for (int i = 0; i < ColorPolygons.Count; i++)
+            {
+                ColorPolygons[i].WriteBinary(writer);
+            }
+
+            writer.Write((ushort)PolySets.Count);
+            for (int i = 0; i < PolySets.Count; i++)
+            {
+                PolySets[i].WriteBinary(writer);
+            }
+
+            writer.Write((ushort)Meshes.Count);
+            for (int i = 0; i < Meshes.Count; i++)
+            {
+                Meshes[i].WriteBinary(writer);
+            }
+
+            writer.Write((ushort)UVs.Count);
+            for (int i = 0; i < UVs.Count; i++)
+            {
+                writer.WriteVector2(UVs[i]);
+            }
+
+            writer.Write((ushort)UVPolygons.Count);
+            for (int i = 0; i < UVPolygons.Count; i++)
+            {
+                UVPolygons[i].WriteBinary(writer);
+            }
+
+            writer.Write((ushort)Units.Count);
+            for (int i = 0; i < Units.Count; i++)
+            {
+                Units[i].WriteBinary(writer);
+            }
+
+            writer.Write((ushort)Modules.Count);
+            for (int i = 0; i < Modules.Count; i++)
+            {
+                Modules[i].WriteBinary(writer);
+            }
+
+            writer.Write((ushort)TPageCount);
+            writer.Write((ushort)WallIndex);
         }
 
         public TrackUnitFile() { }

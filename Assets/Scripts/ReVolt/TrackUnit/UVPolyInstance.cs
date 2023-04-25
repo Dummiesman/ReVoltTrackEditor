@@ -21,7 +21,7 @@ using System.IO;
 
 namespace ReVolt.TrackUnit
 {
-    public class UVPolyInstance
+    public class UVPolyInstance : IBinSerializable
     {
         public int TPage;
         public int PolyID;
@@ -32,6 +32,13 @@ namespace ReVolt.TrackUnit
             this.TPage = reader.ReadByte();
             this.PolyID = reader.ReadUInt16();
             this.Rotation = reader.ReadByte();
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write((byte)TPage);
+            writer.Write((ushort)PolyID);
+            writer.Write((byte)Rotation);
         }
     }
 }

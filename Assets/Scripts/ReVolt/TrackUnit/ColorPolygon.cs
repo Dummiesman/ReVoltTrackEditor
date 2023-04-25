@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace ReVolt.TrackUnit
 {
-    public class ColorPolygon
+    public class ColorPolygon : IBinSerializable
     {
         public Color[] Colors;
 
@@ -34,6 +34,15 @@ namespace ReVolt.TrackUnit
             for(int i=0; i < sideCount; i++)
             {
                 this.Colors[i] = reader.ReadColor32B(); 
+            }
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write((ushort)Colors.Length);
+            for(int i=0; i < Colors.Length; i++)
+            {
+                writer.WriteColor32B(Colors[i]);
             }
         }
     }

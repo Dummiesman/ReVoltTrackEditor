@@ -21,7 +21,7 @@ using System.IO;
 
 namespace ReVolt.TrackUnit
 {
-    public class Polygon
+    public class Polygon : IBinSerializable
     {
         public int[] Indices;
 
@@ -33,6 +33,16 @@ namespace ReVolt.TrackUnit
             for (int i = 0; i < sideCount; i++)
             {
                 this.Indices[i] = reader.ReadUInt16();
+            }
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write((ushort)Indices.Length);
+
+            for(int i=0; i < Indices.Length; i++)
+            {
+                writer.Write((ushort)Indices[i]);
             }
         }
     }

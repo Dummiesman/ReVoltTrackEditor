@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace ReVolt.TrackUnit
 {
-    public class Unit
+    public class Unit : IBinSerializable
     {
         public int MeshID;
         public readonly List<UVPolyInstance> UVPolys = new List<UVPolyInstance>();
@@ -37,6 +37,21 @@ namespace ReVolt.TrackUnit
             return (RootEdges & (0x0008 >> direction)) != 0;
         }
        
+        public void TrimExcessSurfaces(TrackUnitFile parentFile)
+        {
+            var mesh = parentFile.Meshes[MeshID];
+            if (RVConstants.HULL_INDEX >= mesh.PolySets.Count)
+            {
+                return;
+            }
+
+            var polySet = parentFile.PolySets[mesh.PolySets[RVConstants.HULL_INDEX]];
+            while(Surfaces.Count > polySet.PolygonIndices.Count)
+            {
+                Surfaces.RemoveAt(0);
+            }
+        }
+
         public void ReadBinary(BinaryReader reader)
         {
             this.MeshID = reader.ReadUInt16();
@@ -70,6 +85,33 @@ namespace ReVolt.TrackUnit
             }
 
             this.RootEdges = reader.ReadUInt16();
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write((ushort)MeshID);
+
+            writer.Write((ushort)UVPolys.Count);
+            for(int i=0; i < UVPolys.Count; i++)
+            {
+                UVPolys[i].WriteBinary(writer);
+            }
+
+            writer.Write((ushort)Surfaces.Count);
+            for(int i=0; i < Surfaces.Count; i++)
+            {
+                writer.Write((byte)Surfaces[i]);
+            }
+
+            writer.WriteVector3(PickupPosition);
+
+            writer.Write((ushort)RGBs.Count);
+            for(int i=0; i < RGBs.Count; i++)
+            {
+                writer.Write((ushort)RGBs[i]);
+            }
+
+            writer.Write((ushort)RootEdges);
         }
     }
 }

@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace ReVolt.TrackUnit
 {
-    public class PolySet
+    public class PolySet : IBinSerializable
     {
         public readonly List<int> PolygonIndices = new List<int>();
 
@@ -35,6 +35,15 @@ namespace ReVolt.TrackUnit
             {
                 int index = reader.ReadUInt16();
                 PolygonIndices.Add(index);
+            }
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write((ushort)PolygonIndices.Count);
+            for(int i=0; i < PolygonIndices.Count; i++)
+            {
+                writer.Write((ushort)PolygonIndices[i]);
             }
         }
     }

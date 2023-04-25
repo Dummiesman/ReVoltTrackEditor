@@ -22,7 +22,7 @@ using System.IO;
 
 namespace ReVolt.TrackUnit
 {
-    public class Route
+    public class Route : IBinSerializable
     {
         public readonly List<AINode> Nodes = new List<AINode>();
 
@@ -37,7 +37,15 @@ namespace ReVolt.TrackUnit
                 node.ReadBinary(reader);
                 Nodes.Add(node);
             }
+        }
 
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write((ushort)Nodes.Count);
+            for(int i=0; i < Nodes.Count; i++)
+            {
+                Nodes[i].WriteBinary(writer);
+            }
         }
     }
 }

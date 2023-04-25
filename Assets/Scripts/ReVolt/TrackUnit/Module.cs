@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace ReVolt.TrackUnit
 {
-    public class Module
+    public class Module : IBinSerializable
     {
         public readonly List<Instance> Instances = new List<Instance>();
         public readonly List<Zone> Zones = new List<Zone>();
@@ -80,6 +80,33 @@ namespace ReVolt.TrackUnit
                 var light = new Light();
                 light.ReadBinary(reader);
                 Lights.Add(light);
+            }
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write((ushort)Instances.Count);
+            for(int i=0; i < Instances.Count; i++)
+            {
+                Instances[i].WriteBinary(writer);
+            }
+
+            writer.Write((ushort)Zones.Count);
+            for (int i = 0; i < Zones.Count; i++)
+            {
+                Zones[i].WriteBinary(writer);
+            }
+
+            for (int i = 0; i < TrackUnitFile.MAX_MODULE_ROUTES; i++)
+            {
+                var route = (i < Routes.Count) ? Routes[i] : new Route();
+                route.WriteBinary(writer);
+            }
+
+            writer.Write((ushort)Lights.Count);
+            for (int i = 0; i < Lights.Count; i++)
+            {
+                Lights[i].WriteBinary(writer);
             }
         }
     }

@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace ReVolt.TrackUnit
 {
-    public class Light
+    public class Light : IBinSerializable
     {
         public Vector3 Position;
         public float Reach;
@@ -41,6 +41,17 @@ namespace ReVolt.TrackUnit
             this.Cone = reader.ReadSingle();
             this.Color = reader.ReadColor24HB();
             this.Type = reader.ReadUInt16();
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.WriteVector3(Position);
+            writer.Write(Reach);
+            writer.WriteVector3(UpDirection);
+            writer.WriteVector3(ForwardDirection);
+            writer.Write(Cone);
+            writer.WriteColor24HB(Color);
+            writer.Write(Type);
         }
     }
 }

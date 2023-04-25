@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace ReVolt.TrackUnit
 {
-    public class AINode
+    public class AINode : IBinSerializable
     {
         public Vector3 GreenPosition;
         public Vector3 RedPosition;
@@ -38,6 +38,13 @@ namespace ReVolt.TrackUnit
             this.GreenPosition = reader.ReadVector3();
             this.RedPosition = reader.ReadVector3();
             this.RacingLine = reader.ReadSingle();
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.WriteVector3(GreenPosition);
+            writer.WriteVector3(RedPosition);
+            writer.Write(RacingLine);
         }
     }
 }

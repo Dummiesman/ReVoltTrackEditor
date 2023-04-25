@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace ReVolt.TrackUnit
 {
-    public class Zone
+    public class Zone : IBinSerializable
     {
         public Vector3 Center;
         public Vector3 Size;
@@ -36,6 +36,15 @@ namespace ReVolt.TrackUnit
             this.LinkPositions = new Vector3[2];
             this.LinkPositions[0] = reader.ReadVector3();
             this.LinkPositions[1] = reader.ReadVector3();
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.WriteVector3(Center);
+            writer.WriteVector3(Size);
+
+            writer.WriteVector3(LinkPositions[0]);
+            writer.WriteVector3(LinkPositions[1]);
         }
     }
 }

@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace ReVolt.TrackUnit
 {
-    public class Mesh
+    public class Mesh : IBinSerializable
     {
         public readonly List<int> PolySets = new List<int>();
 
@@ -35,6 +35,15 @@ namespace ReVolt.TrackUnit
             {
                 int polySet = reader.ReadUInt16();
                 PolySets.Add(polySet);
+            }
+        }
+
+        public void WriteBinary(BinaryWriter writer)
+        {
+            writer.Write((ushort)PolySets.Count);
+            for(int i=0; i < PolySets.Count; i++)
+            {
+                writer.Write((ushort)PolySets[i]);
             }
         }
     }
