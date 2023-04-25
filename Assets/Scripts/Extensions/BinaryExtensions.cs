@@ -112,6 +112,16 @@ public static class BinaryExtensions
     }
 
     /// <summary>
+    /// Write a 48 bit color in RGB order (converts to 0-255 range)
+    /// </summary>
+    public static void WriteColor24HB(this BinaryWriter writer, Color color)
+    {
+        writer.Write((ushort)(color.r * 255f));
+        writer.Write((ushort)(color.g * 255f));
+        writer.Write((ushort)(color.b * 255f));
+    }
+
+    /// <summary>
     /// Read a 32 bit color in RGBA order
     /// </summary>
     public static Color32 ReadColor32B(this BinaryReader reader)
@@ -124,6 +134,17 @@ public static class BinaryExtensions
     }
 
     /// <summary>
+    /// Write a 24 bit color in RGBA order
+    /// </summary>
+    public static void WriteColor32B(this BinaryWriter writer, Color32 color)
+    {
+        writer.Write(color.r);
+        writer.Write(color.g);
+        writer.Write(color.b);
+        writer.Write(color.a);
+    }
+
+    /// <summary>
     /// Read a 24 bit color in RGB order
     /// </summary>
     public static Color32 ReadColor24B(this BinaryReader reader)
@@ -132,6 +153,16 @@ public static class BinaryExtensions
         byte g = reader.ReadByte();
         byte b = reader.ReadByte();
         return new Color32(r, g, b, 255);
+    }
+
+    /// <summary>
+    /// Write a 24 bit color in RGB order
+    /// </summary>
+    public static void WriteColor24B(this BinaryWriter writer, Color32 color)
+    {
+        writer.Write(color.r);
+        writer.Write(color.g);
+        writer.Write(color.b);
     }
 
     /// <summary>
