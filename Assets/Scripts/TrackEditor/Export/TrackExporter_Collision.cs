@@ -152,31 +152,23 @@ public partial class TrackExporter
                 anyMerged = false;
 
                 var bucket = cellCollisionBuckets[i];
-                bool[] mergedArray = new bool[bucket.Count];
-
-                for (int j = 0; j < bucket.Count; j++)
-                {
-                    if (mergedArray[j])
-                        continue;
-                    for (int k = j + 1; k < bucket.Count; k++)
-                    {
-                        if (mergedArray[k])
-                            continue;
-
-                        bool merged = TryMergePolygons(bucket[j], bucket[k], out var mergedSelfPoly);
-                        if (merged)
-                        {
-                            bucket[j] = mergedSelfPoly;
-                            mergedArray[k] = true;
-                        }
-                        anyMerged |= merged;
-                    }
-                }
 
                 for (int j = bucket.Count - 1; j >= 0; j--)
                 {
-                    if (mergedArray[j])
-                        bucket.RemoveAt(j);
+                    var polyJ = bucket[j];
+
+                    for (int k = bucket.Count - 1; k >= j + 1; k--)
+                    {
+                        var polyK = bucket[k];
+                        bool merged = TryMergePolygons(polyJ, polyK, out var mergedPolySelf);
+                        if (merged)
+                        {
+                            polyJ = mergedPolySelf;
+                            bucket[j] = polyJ;
+                            bucket.RemoveAt(k);
+                        }
+                        anyMerged |= merged;
+                    }
                 }
             } while (anyMerged);
         }
@@ -191,31 +183,22 @@ public partial class TrackExporter
             anyMerged = false;
 
             var bucket = collision.Polyhedrons;
-            bool[] mergedArray = new bool[bucket.Count];
-
-            for (int j = 0; j < bucket.Count; j++)
+            for (int j = bucket.Count - 1; j >= 0; j--)
             {
-                if (mergedArray[j])
-                    continue;
-                for (int k = j+1; k < bucket.Count; k++)
-                {
-                    if (mergedArray[k])
-                        continue;
+                var polyJ = bucket[j];
 
-                    bool merged = TryMergePolygons(bucket[j], bucket[k], out var mergedSelfPoly);
+                for (int k = bucket.Count - 1; k >= j + 1; k--)
+                {
+                    var polyK = bucket[k];
+                    bool merged = TryMergePolygons(polyJ, polyK, out var mergedPoly);
                     if (merged)
                     {
-                        bucket[j] = mergedSelfPoly;
-                        mergedArray[k] = true;
+                        polyJ = mergedPoly;
+                        bucket[j] = polyJ;
+                        bucket.RemoveAt(k);
                     }
                     anyMerged |= merged;
                 }
-            }
-
-            for (int j = bucket.Count - 1; j >= 0; j--)
-            {
-                if (mergedArray[j])
-                    bucket.RemoveAt(j);
             }
         } while (anyMerged);
     }
