@@ -51,6 +51,34 @@ public class ExportMode : EditorMode
     private float exportScale = 1f;
 
     // Other
+    private void AskTrackScale()
+    {
+        TrackEditor.Prompt.InitQuestionPrompt(LocString.PROMPT_EXPORT_CHOOSE_SCALE, 1,
+            () =>
+            {
+                TrackEditor.SetEditMode<TrackEditingMode>();
+            },
+            new PromptMode.PromptItem(LocString.ANSWER_HALF, () =>
+            {
+                askedTrackScale = true;
+                exportScale = 0.5f;
+                TrackEditor.SetEditMode<ExportMode>();
+            }),
+            new PromptMode.PromptItem(LocString.ANSWER_REGULAR, () =>
+            {
+                askedTrackScale = true;
+                exportScale = 1f;
+                TrackEditor.SetEditMode<ExportMode>();
+            }),
+            new PromptMode.PromptItem(LocString.ANSWER_DOUBLE, () =>
+            {
+                askedTrackScale = true;
+                exportScale = 2f;
+                TrackEditor.SetEditMode<ExportMode>();
+            }));
+        TrackEditor.ShowPrompt();
+    }
+
     private void ShowProgressImages()
     {
         foreach (var image in ClockProgressImages)
@@ -252,40 +280,21 @@ public class ExportMode : EditorMode
         base.OnEnterMode();
         TrackEditor.Instance.Camera.enabled = false;
 
-        if (!askedTrackScale)
+        if (TrackEditor.ExportScaleOverride.HasValue)
+        {
+            // user has sepecified a custom scale
+            exportScale = TrackEditor.ExportScaleOverride.Value;
+        }
+        else if (!askedTrackScale)
         {
             // ask for export scale, then re-enter export mode
-            TrackEditor.Prompt.InitQuestionPrompt(LocString.PROMPT_EXPORT_CHOOSE_SCALE, 1,
-                () =>
-                {
-                    TrackEditor.SetEditMode<TrackEditingMode>();
-                },
-                new PromptMode.PromptItem(LocString.ANSWER_HALF, () =>
-                {
-                    askedTrackScale = true;
-                    exportScale = 0.5f;
-                    TrackEditor.SetEditMode<ExportMode>();
-                }),
-                new PromptMode.PromptItem(LocString.ANSWER_REGULAR, () =>
-                {
-                    askedTrackScale = true;
-                    exportScale = 1f;
-                    TrackEditor.SetEditMode<ExportMode>();
-                }),
-                new PromptMode.PromptItem(LocString.ANSWER_DOUBLE, () =>
-                {
-                    askedTrackScale = true;
-                    exportScale = 2f;
-                    TrackEditor.SetEditMode<ExportMode>();
-                }));
-            TrackEditor.ShowPrompt();
+            AskTrackScale();
+            return;
         }
-        else
-        {
-            clockLoopSource.Play();
-            askedTrackScale = false;
-            StartCoroutine(ExportRoutine());
-        }
+
+        clockLoopSource.Play();
+        askedTrackScale = false;
+        StartCoroutine(ExportRoutine());
     }
 
     public override void OnExitMode()

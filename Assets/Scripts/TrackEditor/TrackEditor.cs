@@ -65,6 +65,7 @@ public class TrackEditor : MonoBehaviour
 
     // settings
     public static bool UnlimitedMode { get; private set; } = false;
+    public static float? ExportScaleOverride { get; private set; } = null;
 
     // useful ui
     public static PromptMode Prompt { get; private set; }
@@ -120,6 +121,16 @@ public class TrackEditor : MonoBehaviour
     {
         string[] cmdLineArgs = Environment.GetCommandLineArgs();
         UnlimitedMode = Array.IndexOf(cmdLineArgs, "-unlimited") >= 0;
+
+        // process arguments with one parameter
+        for (int i = 1; i < cmdLineArgs.Length - 1; i++)
+        {
+            if (cmdLineArgs[i] == "-exportscale"
+               && float.TryParse(cmdLineArgs[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out float f))
+            {
+                ExportScaleOverride = f;
+            }
+        }
     }
 
     private void Init()
