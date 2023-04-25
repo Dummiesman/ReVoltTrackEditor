@@ -143,8 +143,12 @@ public class AdjustMode : EditorMode
         {
             Vector2Int newSize = currentSize + movementDelta;
             newSize = Vector2Int.Max(newSize, offsetMaxModulePos); //bounds check top/right
-            newSize.x = Mathf.Clamp(newSize.x, EditorConstants.MinGridSize, EditorConstants.MaxGridSize);
-            newSize.y = Mathf.Clamp(newSize.y, EditorConstants.MinGridSize, EditorConstants.MaxGridSize);
+
+            int minSize = (TrackEditor.UnlimitedMode) ? 3 : EditorConstants.MinGridSize;
+            int maxSize = (TrackEditor.UnlimitedMode) ? ushort.MaxValue : EditorConstants.MaxGridSize;
+
+            newSize.x = Mathf.Clamp(newSize.x, minSize, maxSize);
+            newSize.y = Mathf.Clamp(newSize.y, minSize, maxSize);
 
             if (newSize.x != currentSize.x || newSize.y != currentSize.y)
             {

@@ -45,6 +45,18 @@ public class TrackEditingMode : EditorMode
         }
     }
 
+    public int CursorHeightSteps
+    {
+        get
+        {
+            return editingCursorHeightSteps;
+        }
+        set
+        {
+            editingCursorHeightSteps = value;
+        }
+    }
+
     private Cursor editingCursor = new Cursor() { Size = Vector3.one * 1.2f };
     private int editingCursorHeightSteps = 0;
     private float editingCursorHeight => EditorConstants.ElevationStep * editingCursorHeightSteps;
@@ -164,7 +176,9 @@ public class TrackEditingMode : EditorMode
     public void AdjustCursorHeight(int heightChange)
     {
         int wantedHeight = editingCursorHeightSteps + heightChange;
-        if (wantedHeight < 0 || wantedHeight > EditorConstants.MaxElevationSteps)
+        int maxHeight = (TrackEditor.UnlimitedMode) ? ushort.MaxValue : EditorConstants.MaxElevationSteps;
+
+        if (wantedHeight < 0 || wantedHeight > maxHeight)
         {
             TrackEditor.PlaySound(TrackEditor.SndWarning);
         }
@@ -316,7 +330,9 @@ public class TrackEditingMode : EditorMode
         var camera = TrackEditor.Instance.Camera;
         camera.transform.position = editingCursor.Position.ToVec3XZ()
                                     + (cameraDir * cameraDist)
-                                    + (Vector3.up * cameraHeight);
+                                    + (Vector3.up * cameraHeight)
+                                    + (Vector3.up * Mathf.Max(0f, editingCursorHeight - EditorConstants.MaxElevation) * 1.25f);
+
         camera.transform.LookAt(editingCursor.Position.ToVec3XZ());
         camera.orthographic = false;
     }

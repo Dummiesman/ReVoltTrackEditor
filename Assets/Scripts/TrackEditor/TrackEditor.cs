@@ -63,6 +63,9 @@ public class TrackEditor : MonoBehaviour
     public static ReVolt.TrackUnit.TrackUnitFile TrackUnit { get; private set; }
     public static TrackUnitUnity ProcessedTrackUnit { get; private set; }
 
+    // settings
+    public static bool UnlimitedMode { get; private set; } = false;
+
     // useful ui
     public static PromptMode Prompt { get; private set; }
 
@@ -111,6 +114,12 @@ public class TrackEditor : MonoBehaviour
             }
         }
         ClockTexture.Apply(true);
+    }
+
+    private void ParseCommandLine()
+    {
+        string[] cmdLineArgs = Environment.GetCommandLineArgs();
+        UnlimitedMode = Array.IndexOf(cmdLineArgs, "-unlimited") >= 0;
     }
 
     private void Init()
@@ -193,6 +202,9 @@ public class TrackEditor : MonoBehaviour
         // create new track and set edit mode
         NewTrackAction();
         SetEditMode<TrackEditingMode>();
+
+        // handle args
+        ParseCommandLine();
 
         Debug.Log($"TrackEditor fully initialized load time: {perfTimer.ElapsedMilliseconds}ms");
     }

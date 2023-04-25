@@ -51,7 +51,7 @@ public class PickupEditingMode : EditorMode
             return false;
 
         // have we placed the maximum amount?
-        if (!cell.HasPickup && numPickups >= MAX_PICKUPS)
+        if (!cell.HasPickup && numPickups >= MAX_PICKUPS && !TrackEditor.UnlimitedMode)
             return false;
 
         if (cell.HasPickup)
@@ -129,7 +129,10 @@ public class PickupEditingMode : EditorMode
         Draw();
 
         // update ui text
-        PickupPlacedText.text = string.Format(Localization.Lookup(LocString.PICKUPS_PLACED), numPickups, MAX_PICKUPS);
+        if (TrackEditor.UnlimitedMode)
+            PickupPlacedText.text = string.Format(Localization.Lookup(LocString.PICKUPS_PLACED), numPickups, "∞");
+        else
+            PickupPlacedText.text = string.Format(Localization.Lookup(LocString.PICKUPS_PLACED), numPickups, MAX_PICKUPS);
     }
 
 
