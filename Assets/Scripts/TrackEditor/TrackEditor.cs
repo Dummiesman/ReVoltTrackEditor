@@ -48,7 +48,7 @@ public class TrackEditor : MonoBehaviour
     public TMP_Text DebugText;
 
     private int debugMode = -1;
-    private int maxDebugMode = 0;
+    private int maxDebugMode = 1;
 
     // editor modes
     [Header("Edit Modes")]
@@ -298,8 +298,13 @@ public class TrackEditor : MonoBehaviour
         // debug
         if (debugMode == 0)
         {
-            if(Time.timeSinceLevelLoadAsDouble % 0.5f > ((Time.timeSinceLevelLoadAsDouble + Time.deltaTime) % 0.5f))
-                DebugText.text = $"{Mathf.RoundToInt(1f / Time.deltaTime)}fps";
+            if(Time.timeSinceLevelLoadAsDouble % 0.1f > ((Time.timeSinceLevelLoadAsDouble + Time.deltaTime) % 0.1f))
+                DebugText.text = $"{Mathf.RoundToInt(1f / Time.smoothDeltaTime)}fps";
+        }
+        else if(debugMode == 1)
+        {
+            var editMode = GetEditMode<TrackEditingMode>();
+            DebugText.text = $"Cursor Information\nX {editMode.CursorPosition.x}\nY {editMode.CursorPosition.y}\nHeight {editMode.CursorHeightSteps}";
         }
     }
 
